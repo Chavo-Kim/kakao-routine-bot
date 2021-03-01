@@ -334,30 +334,30 @@ function getTodayRoutineProcess(today, username, routineName) {
     let dateString = DataBase.getDataBase(username + "_" + routineName +"_date");
     let dateList = getArray(dateString);
     if(!dateString) {
-        let returnStirng = "";
-        returnStirng += "❌";
-        returnStirng += routineName;
-        returnStirng += "\n";
+        let returnString = "";
+        returnString += "❌";
+        returnString += routineName;
+        returnString += "\n";
 
-        return returnStirng;
+        return returnString;
     }
 
     let lastDay = new Date(dateList[dateList.length-1]);
 
     if(lastDay.getDate() == today.getDate() && lastDay.getMonth() == today.getMonth() && lastDay.getYear() == today.getYear()){
-        let returnStirng = "";
-        returnStirng += "✅";
-        returnStirng += routineName;
-        returnStirng += "\n";
+        let returnString = "";
+        returnString += "✅";
+        returnString += routineName;
+        returnString += "\n";
 
-        return returnStirng;
+        return returnString;
     } else {
-        let returnStirng = "";
-        returnStirng += "❌";
-        returnStirng += routineName;
-        returnStirng += "\n";
+        let returnString = "";
+        returnString += "❌";
+        returnString += routineName;
+        returnString += "\n";
 
-        return returnStirng;
+        return returnString;
     }
 }
 
@@ -420,13 +420,13 @@ function getMonthRoutineProcess(today, username, routineName) {
     let dateList = getArray(dateString);
 
     if(!dateString) {
-        let returnString = "❌";
-        returnStirng += routineName;
-        returnStirng += "\n[";
-        returnStirng += "-".repeat(targetNum);
-        returnStirng += "]\n";
+        let returnString = '❌';
+        returnString += routineName;
+        returnString += "\n[";
+        returnString += "-".repeat(targetNum);
+        returnString += "]\n";
 
-        return returnStirng;
+        return returnString;
     }
 
     let count = 0;
@@ -439,23 +439,23 @@ function getMonthRoutineProcess(today, username, routineName) {
     })
 
     if(targetNum > count) {
-        let returnString = "🏃";
-        returnStirng += routineName;
-        returnStirng += "(목표 달성까지 ";
-        returnStirng += targetNum - count;
-        returnStirng += "회)";
-        returnStirng += "\n[";
-        returnStirng += ">".repeat(count);
-        returnStirng += "-".repeat(targetNum - count);
-        returnStirng += "]\n";
+        let returnString = '🏃';
+        returnString += routineName;
+        returnString += "(목표 달성까지 ";
+        returnString += targetNum - count;
+        returnString += "회)";
+        returnString += "\n[";
+        returnString += ">".repeat(count);
+        returnString += "-".repeat(targetNum - count);
+        returnString += "]\n";
 
-        return returnStirng;
+        return returnString;
     } else {
-        let returnString = "✅";
-        returnStirng += routineName;
-        returnStirng += "\n[ C L E A R 🥳 ]\n";
+        let returnString = '✅';
+        returnString += routineName;
+        returnString += "\n[ C L E A R 🥳 ]\n";
 
-        return returnStirng;
+        return returnString;
     }
 }
 
