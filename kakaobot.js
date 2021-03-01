@@ -592,6 +592,20 @@ function finishRoutine(routineName, dateString, sender, room){
     Api.replyRoom(room, getMonthRoutineProcess(newDate, username, routineName));
 }
 
+function finishAllRoutine(dateString, sender, room){
+    const username = getUsername(sender, room);
+
+    if (!username) {
+        return;
+    }
+
+    const routineList = getRoutineList(username, room);
+
+    routineList.forEach(routineName =>{
+        finishRoutine(routineName, dateString, sender, room);
+    })
+}
+
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
 
    //!신규유저 김재휘
@@ -733,6 +747,27 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
 
        return;
    }
+
+   //!루틴올클 2021-12-20
+   else if(msg.includes("!루틴올클")){
+       //띄어쓰기 기준으로 나누어서 배열을 반환
+       //띄어쓰기 기준으로 나누어서 배열을 반환
+       let wordList = msg.split(" ")
+
+       if(!checkValidMsg(wordList, 2, room)) {
+           return;
+       }
+
+       //날짜 형식이 맞는지 확인
+       if(!dateFormatTest(wordList[1], room)){
+           return;
+       }
+
+       finishAllRoutine(wordList[1], sender, room);
+
+       return;
+   }
+
    //!현황
    else if (msg.includes("!현황")){
        getMyRoutinesProcess(sender, room);
@@ -875,6 +910,9 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
        returnString += "13. !목표설정 {루틴 이름} {횟수}\n"
        returnString += "ex) !목표설정 다이어리 20\n\n"
        returnString += "한 달동안 달성할 목표의 횟수를 설정할 수 있습니다.\n\n"
+       returnString += "14. !루틴올클 {날짜}\n"
+       returnString += "ex) !루틴올클 오늘\n\n"
+       returnString += "나의 루틴들을 모두 완료했다고 기록하는 명령입니다.\n\n"
 
    		replier.reply(room, returnString)
    }
