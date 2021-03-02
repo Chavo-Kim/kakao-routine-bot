@@ -184,13 +184,15 @@ function removeEndDate(routineName, sender, room) {
 }
 
 function getRoutineList(username, room) {
-    let routineString = DataBase.getDataBase(username + "_" + "list")
-    let routineList = getArray(routineString);
 
-    if(routineString == ""){
+    let routineString = DataBase.getDataBase(username + "_" + "list")
+
+    if(!routineString){
         Api.replyRoom(room, "루틴 리스트가 비어있습니다!");
         return null;
     }
+
+    let routineList = getArray(routineString);
 
     return routineList;
 }
@@ -312,8 +314,10 @@ function getMyRoutinesProcess(sender, room) {
         return;
     }
 
-    let routineString = DataBase.getDataBase(username + "_" + "list")
-    let routineList = getArray(routineString);
+    let routineList = getRoutineList(username, room);
+
+    if(!routineList)
+        return;
 
     let returnString = "";
 
@@ -344,7 +348,7 @@ function getTodayRoutineProcess(today, username, routineName) {
 
     let lastDay = new Date(dateList[dateList.length-1]);
 
-    if(lastDay.getDate() == today.getDate() && lastDay.getMonth() == today.getMonth() && lastDay.getYear() == today.getYear()){
+    if(lastDay.getDate() == today.getDate() && lastDay.getMonth() == today.getMonth() && lastDay.getFullYear() == today.getFullYear()){
         let returnString = "";
         returnString += "✅";
         returnString += routineName;
@@ -361,7 +365,7 @@ function getTodayRoutineProcess(today, username, routineName) {
     }
 }
 
-function getTodayMyRoutinesProcess(username, room) {
+function getTodayMyRoutinesProcess(username, room, isReply) {
     let today = new Date();
 
     //17시간 더해주기
@@ -370,8 +374,10 @@ function getTodayMyRoutinesProcess(username, room) {
         today.setTime(today.getTime() + (17*60*60*1000))
     }
 
-    let routineString = DataBase.getDataBase(username + "_" + "list")
-    let routineList = getArray(routineString);
+    let routineList = getRoutineList(username, room);
+
+    if(!routineList)
+        return;
 
     let returnString = "";
 
@@ -386,15 +392,22 @@ function getTodayMyRoutinesProcess(username, room) {
 
     returnString += '\n';
 
-    Api.replyRoom(room, returnString);
+    if(isReply)
+        Api.replyRoom(room, returnString);
+
+    return returnString;
 }
 
 function getTodayRoutinesProcess(room) {
     const usernameList = getUsernameList();
 
+    let returnString = "";
+
     usernameList.forEach(username =>
-        getTodayMyRoutinesProcess(username, room)
+        returnString += getTodayMyRoutinesProcess(username, room, false)
     )
+
+    Api.replyRoom(room, returnString);
 }
 
 function setRoutineTarget(routineName, target, sender, room) {
@@ -433,7 +446,7 @@ function getMonthRoutineProcess(today, username, routineName) {
 
     dateList.forEach(dateString => {
         let currDate = new Date(dateString);
-        if(currDate.getMonth() == today.getMonth() && currDate.getYear() == today.getYear()) {
+        if(currDate.getMonth() === today.getMonth() && currDate.getFullYear() === today.getFullYear()) {
             count++;
         }
     })
@@ -470,7 +483,7 @@ function getMonthRoutineProcessDetail(routineName, sender, room) {
     let today = new Date();
 
     //17시간 더해주기
-    if(username != "백지원"){
+    if(username !== "백지원"){
         let diff = 17
         today.setTime(today.getTime() + (17*60*60*1000))
     }
@@ -484,7 +497,7 @@ function getMonthRoutineProcessDetail(routineName, sender, room) {
 
     dateList.forEach(dateString => {
         let currDate = new Date(dateString);
-        if(currDate.getMonth() == today.getMonth() && currDate.getYear() == today.getYear()) {
+        if(currDate.getMonth() === today.getMonth() && currDate.getFullYear() === today.getFullYear()) {
             currDateList.push(dateString);
         }
     })
@@ -501,15 +514,17 @@ function getMonthMyRoutinesProcess(username, room, isReply) {
         today.setTime(today.getTime() + (17*60*60*1000))
     }
 
-    let routineString = DataBase.getDataBase(username + "_" + "list")
-    let routineList = getArray(routineString);
+    let routineList = getRoutineList(username, room);
 
-    let returnString = "";
+    if(!routineList)
+        return;
+
+    let returnString = "<";
 
     returnString += username;
     returnString += "의 목표 달성 현황 : ";
     returnString += (today.getMonth() + 1);
-    returnString += "월\n\n";
+    returnString += "월>\n\n";
 
     routineList.forEach(routineName => {
         returnString += getMonthRoutineProcess(today, username, routineName);
@@ -586,7 +601,7 @@ function finishRoutine(routineName, dateString, sender, room, isReply){
     const counterString = makeDBString(counterList);
 
     //하나 증가시키고 db에 입력
-    DataBase.setDataBase(username + "_" + routineName + "_counter", countString);
+    DataBase.setDataBase(username + "_" + routineName + "_counter", counterString);
 
     //날짜 정보 db에 더해주기
     //잘들어가는지 확인을 위해 출력, 이후에는 삭제해도 상관 없음
@@ -608,7 +623,10 @@ function finishAllRoutine(dateString, sender, room){
         return;
     }
 
-    const routineList = getRoutineList(username, room);
+    let routineList = getRoutineList(username, room);
+
+    if(!routineList)
+        return;
 
     routineList.forEach(routineName =>{
         finishRoutine(routineName, dateString, sender, room, false);
@@ -616,7 +634,7 @@ function finishAllRoutine(dateString, sender, room){
 
     getMyRoutinesProcess(sender, room);
 
-    getMonthMyRoutinesProcess(username, room);
+    getMonthMyRoutinesProcess(username, room, true);
 }
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
@@ -736,7 +754,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
         return;
       }
 
-       finishRoutine('다이어리', wordList[1], sender, room);
+       finishRoutine('다이어리', wordList[1], sender, room, true);
 
        return;
    }
@@ -788,7 +806,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
        return;
    }
 
-   else if (msg == "!오늘"){
+   else if (msg === "!오늘"){
        getTodayRoutinesProcess(room);
 
        return;
@@ -802,7 +820,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
            return;
        }
 
-      getTodayMyRoutinesProcess(wordList[1], room);
+      getTodayMyRoutinesProcess(wordList[1], room, true);
 
        return;
    }
@@ -820,7 +838,20 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
        return;
    }
 
-   else if (msg == "!이번달"){
+   //!이번달상세 {루틴이름}
+   else if (msg.includes("!이번달상세")){
+       let wordList = msg.split(" ")
+
+       if(!checkValidMsg(wordList, 2, room)){
+           return;
+       }
+
+       getMonthRoutineProcessDetail(wordList[1], sender, room);
+
+       return;
+   }
+
+   else if (msg === "!이번달"){
        getMonthRoutinesProcess(room);
 
        return;
@@ -838,21 +869,8 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
        return;
    }
 
-    //!이번달상세 {루틴이름}
-   else if (msg.includes("!이번달상세")){
-       let wordList = msg.split(" ")
 
-       if(!checkValidMsg(wordList, 2, room)){
-           return;
-       }
-
-       getMonthRoutineProcessDetail(wordList[1], sender, room);
-
-       return;
-   }
-
-
-   else if(msg == "!힘내 백지" || msg == "!힘내 백지원" || msg == "!힘내 캘리" || msg == "!힘내 지원"){
+   else if(msg === "!힘내 백지" || msg === "!힘내 백지원" || msg === "!힘내 캘리" || msg === "!힘내 지원"){
          replier.reply(room, "미래인재 일동은 백지를 응원합니다~!~!")
          return;
    }
@@ -863,7 +881,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
    //     return;
    // }
 
-   else if(msg == "!유노윤호모드" || msg == "!유노윤호"){
+   else if(msg === "!유노윤호모드" || msg === "!유노윤호"){
          let data = Utils.getWebText("https://chavo-s-it-life.tistory.com/71")
          data = data.replace(/<[^>]+>/g,""); //태그 삭제
          data = data.split("명언시작")[1]
@@ -875,7 +893,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
          replier.reply(awesomeWordList[Math.floor(Math.random() * awesomeWordList.length)].trim())
    }
 
-   else if (msg == "!규칙" || msg == "!사용법"){
+   else if (msg === "!규칙" || msg === "!사용법"){
    		let returnString = ""
        returnString += "----ver2. 주요 변화----\n"
        returnString += "이제 대부분의 명령어에서 본인 이름을 쓰지 않아도 됩니다. 메세지 전송자의 정보를 받아 자동으로 처리합니다.\n";
