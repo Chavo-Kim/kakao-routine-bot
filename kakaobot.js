@@ -528,7 +528,7 @@ function getMonthRoutinesProcess(room) {
     )
 }
 
-function finishRoutine(routineName, dateString, sender, room){
+function finishRoutine(routineName, dateString, sender, room, isReply){
     const username = getUsername(sender, room);
 
     if (!username) {
@@ -585,11 +585,13 @@ function finishRoutine(routineName, dateString, sender, room){
     //잘들어가는지 확인을 위해 출력, 이후에는 삭제해도 상관 없음
     DataBase.appendDataBase(username + "_" + routineName + "_" + "date", newDateString + "\n")
 
-    Api.replyRoom(room, "축하합니다! " + sender + "님.\n" + countNum.toString() + "번째 " + routineName +  " 완료입니다.\n" + "연속 " + contiCountNum.toString() + "번째입니다.")
+    if(isReply)
+        Api.replyRoom(room, "축하합니다! " + sender + "님.\n" + countNum.toString() + "번째 " + routineName +  " 완료입니다.\n" + "연속 " + contiCountNum.toString() + "번째입니다.")
 
-    continuePhrase(contiCountNum, room);
+    //continuePhrase(contiCountNum, room);
 
-    Api.replyRoom(room, getMonthRoutineProcess(newDate, username, routineName));
+    if(isReply)
+        Api.replyRoom(room, getMonthRoutineProcess(newDate, username, routineName));
 }
 
 function finishAllRoutine(dateString, sender, room){
@@ -602,8 +604,12 @@ function finishAllRoutine(dateString, sender, room){
     const routineList = getRoutineList(username, room);
 
     routineList.forEach(routineName =>{
-        finishRoutine(routineName, dateString, sender, room);
+        finishRoutine(routineName, dateString, sender, room, false);
     })
+
+    getMyRoutinesProcess(sender, room);
+
+    getMonthMyRoutinesProcess(username, room);
 }
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
@@ -743,7 +749,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
            return;
        }
 
-       finishRoutine(wordList[1], wordList[2], sender, room);
+       finishRoutine(wordList[1], wordList[2], sender, room, true);
 
        return;
    }
@@ -822,7 +828,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
 
        getMonthMyRoutinesProcess(wordList[1], room);
 
-         return;
+       return;
    }
 
     //!이번달상세 {루틴이름}
