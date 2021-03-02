@@ -492,7 +492,7 @@ function getMonthRoutineProcessDetail(routineName, sender, room) {
     Api.replyRoom(room, makeDBString(currDateList));
 }
 
-function getMonthMyRoutinesProcess(username, room) {
+function getMonthMyRoutinesProcess(username, room, isReply) {
     let today = new Date();
 
     //17시간 더해주기
@@ -517,15 +517,22 @@ function getMonthMyRoutinesProcess(username, room) {
 
     returnString += '\n';
 
-    Api.replyRoom(room, returnString);
+    if(isReply)
+        Api.replyRoom(room, returnString);
+
+    return returnString;
 }
 
 function getMonthRoutinesProcess(room) {
     const usernameList = getUsernameList();
 
+    let returnString = "";
+
     usernameList.forEach(username =>
-        getMonthMyRoutinesProcess(username, room)
+        returnString += getMonthMyRoutinesProcess(username, room, false)
     )
+
+    Api.replyRoom(room, returnString);
 }
 
 function finishRoutine(routineName, dateString, sender, room, isReply){
@@ -826,7 +833,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
            return;
        }
 
-       getMonthMyRoutinesProcess(wordList[1], room);
+       getMonthMyRoutinesProcess(wordList[1], room, true);
 
        return;
    }
