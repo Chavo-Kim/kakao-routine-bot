@@ -21,6 +21,19 @@ function checkValidMsg(wordList, cnt, room){
     }
 }
 
+function getDayCntForMonth(year, month) {
+    if(month == 2) {
+        if(year%4 === 0){
+            return 29;
+        }
+        return 28;
+    }
+    if(month == 4 || month == 6 || month == 9 || month == 11){
+        return 30;
+    }
+    return 31;
+}
+
 function getArray(origin_str) {
     const wordList = origin_str.split('\n');
     return wordList.filter(item => item !== "")
@@ -541,6 +554,10 @@ function getMonthMyRoutinesProcess(username, room, isReply) {
     returnString += "의 목표 달성 현황 : ";
     returnString += (today.getMonth() + 1);
     returnString += "월>\n\n";
+
+    returnString += "이번 달의 남은 날 :";
+    returnString += (getDayCntForMonth(today.getFullYear(), today.getMonth()) - today.getDate()).toString();
+    returnString += "일\n\n";
 
     routineList.forEach(routineName => {
         returnString += getMonthRoutineProcess(today, username, routineName);
